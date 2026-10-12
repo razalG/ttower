@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Infinite Tower - Cyber Galaxy Edition (200 Blocks)</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #020208;
+            color: white;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Cadru Mobil Vertical TikTok (9:16) cu Margini Curbate Premium */
+        #tiktok-frame {
+            width: 420px;
+            height: 750px;
+            position: relative;
+            background: #03020a;
+            border: 2px solid rgba(0, 240, 255, 0.5);
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.25), inset 0 0 30px rgba(112, 0, 255, 0.15);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Panou Superior Progres (Glassmorphism) */
+        #progress-container {
+            position: absolute;
+            top: 15px;
+            width: 390px;
+            z-index: 10;
+            background: rgba(10, 12, 25, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+        }
+
+        #progress-wrapper {
+            width: 100%;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 7px;
+            overflow: visible;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00f0ff, #7000ff, #ff0055);
+            width: 0%;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 7px;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+        }
+
+        #progress-text {
+            margin-top: 8px;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.8px;
+            color: #00f0ff;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+        }
+
+        #chance-text {
+            margin-top: 4px;
+            font-weight: 700;
+            font-size: 9px;
+            color: #ff0055;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            text-shadow: 0 0 6px rgba(255, 0, 85, 0.5);
+        }
+
+        /* Praguri evenimente (40, 80, 120, 160) */
+        .event-marker {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.4);
+            z-index: 12;
+        }
+        .event-marker::after {
+            content: '⚠️';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            filter: drop-shadow(0 0 4px #ff0055);
+        }
+        #m20 { left: 20%; }
+        #m40 { left: 40%; }
+        #m60 { left: 60%; }
+        #m80 { left: 80%; }
+
+        /* Canvas Joc */
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+        }
+
+        /* Top 3 Contributors - Glass Card (Stânga Sus) */
+        #in-game-leaderboard {
+            position: absolute;
+            top: 100px;
+            left: 15px;
+            width: 125px;
+            height: 105px;
+            background: rgba(10, 12, 25, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            border-radius: 12px;
+            padding: 8px;
+            z-index: 15;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+        #in-game-leaderboard h3 {
+            margin: 0 0 5px 0;
+            font-size: 9px;
+            color: #00f0ff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 3px;
+        }
+        #lb-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .lb-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px 6px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .lb-row span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 75px;
+        }
+
+        /* Banner Rush Moment Mărit cu Font Generos (Dreapta Sus) */
+        #rush-banner {
+            position: absolute;
+            top: 100px;
+            left: 150px;
+            right: 15px;
+            height: 105px;
+            background: linear-gradient(135deg, rgba(255, 0, 85, 0.95) 0%, rgba(150, 0, 60, 0.95) 100%);
+            backdrop-filter: blur(12px);
+            color: white;
+            border: 2px solid #ffea00;
+            border-radius: 14px;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.8);
+            animation: pulseBanner 0.4s infinite alternate;
+            text-align: center;
+            padding: 10px 6px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #rush-banner .title {
+            font-size: 15px;
+            font-weight: 900;
+            color: #ffea00;
+            text-shadow: 0 0 10px rgba(255, 234, 0, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #rush-banner .sub {
+            font-size: 16px;
+            font-weight: 900;
+            margin-top: 4px;
+            color: #ffffff;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+        }
+        @keyframes pulseBanner { 0% { transform: scale(1); } 100% { transform: scale(1.03); } }
+
+        /* Pop-up Ecran Victorie & Top 5 Contribuitori */
+        #win-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(3, 2, 10, 0.88);
+            backdrop-filter: blur(15px);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        #win-card {
+            width: 320px;
+            background: linear-gradient(135deg, rgba(20, 25, 45, 0.9) 0%, rgba(10, 12, 25, 0.95) 100%);
+            border: 2px solid #ffea00;
+            box-shadow: 0 0 35px rgba(255, 234, 0, 0.4);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+        }
+        #win-card h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 900;
+            color: #ffea00;
+            text-shadow: 0 0 15px rgba(255, 234, 0, 0.8);
+            letter-spacing: 1.5px;
+        }
+        #win-card h2 {
+            margin: 5px 0 15px 0;
+            font-size: 16px;
+            color: #00f0ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .win-lb-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Sidebar Dreapta - Simulator de Test & Toggle Voice */
+        #sidebar {
+            width: 320px;
+            height: 750px;
+            margin-left: 20px;
+            background: rgba(12, 14, 24, 0.95);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #test-panel {
+            background: rgba(25, 10, 25, 0.8);
+            border: 1px dashed #ff0055;
+            padding: 18px; border-radius: 12px;
+        }
+        #test-panel h3 { margin-top: 0; color: #ff88aa; font-size: 14px; }
+        .test-btn {
+            background: linear-gradient(135deg, #ff0055 0%, #b3003b 100%);
+            color: white; border: none;
+            padding: 10px; border-radius: 6px; cursor: pointer;
+            font-weight: bold; margin: 4px 2px; font-size: 12px; width: 48%;
+            box-shadow: 0 4px 15px rgba(255,0,85,0.3);
+            transition: 0.2s;
+        }
+        .test-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,0,85,0.5); }
+        
+        .voice-toggle {
+            margin-top: 10px;
+            width: 100%;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cadru Mobil Vertical TikTok (OBS Ready) -->
+    <div id="tiktok-frame">
+        
+        <!-- Panou de Progres Sus -->
+        <div id="progress-container">
+            <div id="progress-wrapper">
+                <div class="event-marker" id="m20"></div>
+                <div class="event-marker" id="m40"></div>
+                <div class="event-marker" id="m60"></div>
+                <div class="event-marker" id="m80"></div>
+                <div id="progress-bar"></div>
+            </div>
+            <div id="progress-text">0% | 40 BLOCKS UNTIL EVENT</div>
+            <div id="chance-text">⚡ 25% CHANCE TO FALL / MISS</div>
+        </div>
+
+        <!-- Leaderboard Top 3 (Stânga Sus) -->
+        <div id="in-game-leaderboard">
+            <h3>Top 3 Contributors</h3>
+            <div id="lb-list"></div>
+        </div>
+
+        <!-- Banner Rush Moment Modern (Dreapta Sus - Mărit) -->
+        <div id="rush-banner">
+            <div class="title">🚨 RUSH MOMENT! 🚨</div>
+            <div class="sub" id="rush-timer-text">2X ACTIVE (10s)</div>
+        </div>
+
+        <!-- Pop-up Ecran Victorie și Top 5 Final -->
+        <div id="win-overlay">
+            <div id="win-card">
+                <h1>🏆 WIN! 🏆</h1>
+                <h2>Congratulations!</h2>
+                <div id="win-lb-list"></div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <!-- Simulator de Test în dreapta -->
+    <div id="sidebar">
+        <div id="test-panel">
+            <h3>🧪 Simulator Cadouri (Test)</h3>
+            <button class="test-btn" onclick="sendTest('ROSE')">+1 Rose</button>
+            <button class="test-btn" onclick="sendTest('FOLLOW')">+1 Follow</button>
+            <button class="test-btn" onclick="sendTest('TAP')">+1 Tap (50x)</button>
+            <button class="test-btn" onclick="sendTest('SABOTAGE')" style="background:linear-gradient(135deg, #444 0%, #222 100%);">-1 Sabotage</button>
+            
+            <button class="voice-toggle" id="voiceToggleBtn" onclick="toggleVoice()">🔊 Voiceover: ON</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = 420;
+        canvas.height = 750;
+
+        let currentBlocks = 0;
+        const maxBlocks = 200;
+        let rushActive = false;
+        let rushInterval = null;
+        let rushTimeLeft = 10;
+        let contributors = {};
+        let isGameFinished = false;
+        let voiceEnabled = true;
+
+        let lastSpokenTime = {};
+        const SPEECH_COOLDOWN = 3000;
+
+        function toggleVoice() {
+            voiceEnabled = !voiceEnabled;
+            document.getElementById('voiceToggleBtn').innerText = voiceEnabled ? "🔊 Voiceover: ON" : "🔇 Voiceover: OFF";
+        }
+
+        function speakDonation(user) {
+            if (!voiceEnabled || !window.speechSynthesis) return;
+
+            let now = Date.now();
+            if (lastSpokenTime[user] && (now - lastSpokenTime[user] < SPEECH_COOLDOWN)) {
+                return;
+            }
+            lastSpokenTime[user] = now;
+
+            let text = `Thank you ${user}`;
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 1.1;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        const BLOCK_SIZE = 110;
+        let tower = [];
+
+        let cameraY = 0;
+        let targetCameraY = 0;
+
+        let smokeParticles = [];
+
+        // --- SISTEM GALAXY BACKGROUND ---
+        let stars = [];
+        for (let i = 0; i < 100; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 0.5,
+                alpha: Math.random(),
+                speedAlpha: Math.random() * 0.03 + 0.01
+            });
+        }
+
+        let dustParticles = [];
+        for (let i = 0; i < 25; i++) {
+            dustParticles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 15 + 10,
+                color: Math.random() > 0.5 ? 'rgba(0, 240, 255, 0.05)' : 'rgba(255, 0, 128, 0.05)',
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3
+            });
+        }
+
+        let meteors = [];
+        function spawnMeteor() {
+            meteors.push({
+                x: Math.random() * canvas.width * 1.5 - 50,
+                y: -40,
+                length: Math.random() * 100 + 70,
+                speed: Math.random() * 8 + 6,
+                size: Math.random() * 3 + 2,
+                color: Math.random() > 0.5 ? '#ff0055' : '#ffea00'
+            });
+        }
+        setInterval(spawnMeteor, 1800);
+
+        let rockets = [];
+        function spawnRocket() {
+            rockets.push({
+                x: -50,
+                y: Math.random() * (canvas.height * 0.6) + 100,
+                vx: Math.random() * 3 + 2,
+                vy: (Math.random() - 0.5) * 1.5,
+                size: 14,
+                flamePulse: 0
+            });
+        }
+        setInterval(spawnRocket, 6000);
+
+        const neonColors = [
+            "#00f0ff", "#ff0055", "#39ff14", "#ffea00", "#ff6600", "#b026ff"
+        ];
+
+        function getRandomNeonColor() {
+            return neonColors[Math.floor(Math.random() * neonColors.length)];
+        }
+
+        let currentNextColor = getRandomNeonColor();
+
+        let pendulum = {
+            angle: 0,
+            speed: 0.035,
+            length: 150,
+            x: 0,
+            y: 0
+        };
+
+        let fallingBlocks = [];
+
+        function sendTest(type) {
+            socket.emit('testAction', type);
+        }
+
+        socket.on('gameAction', (data) => {
+            if (isGameFinished) return;
+
+            let power = rushActive ? 2 : 1;
+
+            if (data.type === 'ROSE' || data.type === 'FOLLOW' || data.type === 'TAP') {
+                speakDonation(data.user);
+
+                for (let i = 0; i < power; i++) {
+                    if (currentBlocks < maxBlocks) {
+                        currentBlocks++;
+                        triggerBlockDrop(data.user, data.avatar, i * 70);
+                        updateContributor(data.user, 1);
+                    }
+                }
+                checkRushTriggers();
+            } else if (data.type === 'SABOTAGE') {
+                let destroyPower = rushActive ? 2 : 1;
+                for (let i = 0; i < destroyPower; i++) {
+                    if (currentBlocks > 0 && tower.length > 0) {
+                        currentBlocks--;
+                        tower.pop();
+                        recalculateCamera();
+                    }
+                }
+            }
+            updateUI();
+        });
+
+        function triggerBlockDrop(user, avatar, spawnYOffset = 0) {
+            let avatarImg = new Image();
+            avatarImg.src = avatar || 'https://via.placeholder.com/80';
+
+            let isRoof = (currentBlocks === maxBlocks);
+
+            let startX = pendulum.x - BLOCK_SIZE / 2;
+            let startY = pendulum.y - spawnYOffset;
+
+            let willMiss = (!isRoof && Math.random() < 0.25);
+            let dropVx = 0;
+
+            if (willMiss) {
+                dropVx = Math.random() > 0.5 ? -4.5 : 4.5;
+            } else {
+                let centerTowerX = (canvas.width / 2) - (BLOCK_SIZE / 2);
+                let randomOffset = (Math.random() - 0.5) * 30;
+                dropVx = ((centerTowerX + randomOffset) - startX) / 25;
+            }
+
+            fallingBlocks.push({
+                x: startX,
+                y: startY,
+                vx: dropVx,
+                vy: 0,
+                gravity: 0.8,
+                user: user,
+                avatarImg: avatarImg,
+                color: currentNextColor,
+                isRoof: isRoof,
+                willMiss: willMiss
+            });
+
+            currentNextColor = getRandomNeonColor();
+        }
+
+        function updateContributor(user, points) {
+            if (!contributors[user]) contributors[user] = 0;
+            contributors[user] += points;
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            let sorted = Object.entries(contributors).sort((a, b) => b[1] - a[1]);
+            const lbList = document.getElementById('lb-list');
+            lbList.innerHTML = '';
+            sorted.slice(0, 3).forEach(([user, score], index) => {
+                let badge = index === 0 ? '👑 ' : '';
+                let row = document.createElement('div');
+                row.className = 'lb-row';
+                row.innerHTML = `<span>${badge}${user}</span> <strong>${score}</strong>`;
+                lbList.appendChild(row);
+            });
+        }
+
+        function checkRushTriggers() {
+            if ([40, 80, 120, 160].includes(currentBlocks)) {
+                triggerRushMoment();
+            }
+        }
+
+        function triggerRushMoment() {
+            rushActive = true;
+            rushTimeLeft = 10;
+            const banner = document.getElementById('rush-banner');
+            banner.style.display = 'flex';
+            document.getElementById('rush-timer-text').innerText = `2X ACTIVE (${rushTimeLeft}s)`;
+
+            if (rushInterval) clearInterval(rushInterval);
+
+            rushInterval = setInterval(() => {
+                rushTimeLeft--;
+                if (rushTimeLeft > 0) {
+                    document.getElementById('rush-timer-text').innerText = `2X ACTIVE (${rushTimeLeft}s)`;
+                } else {
+                    rushActive = false;
+                    banner.style.display = 'none';
+                    clearInterval(rushInterval);
+                }
+            }, 1000);
+        }
+
+        function triggerVictorySequence() {
+            isGameFinished = true;
+
+            setTimeout(() => {
+                let sorted = Object.entries(contributors).sort((a, b) => b[1] - a[1]);
+                const winLbList = document.getElementById('win-lb-list');
+                winLbList.innerHTML = '';
+
+                sorted.slice(0, 5).forEach(([user, score], index) => {
+                    let badge = index === 0 ? '👑 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
+                    let row = document.createElement('div');
+                    row.className = 'win-lb-row';
+                    row.innerHTML = `<span>${badge}${user}</span> <span>${score} BLOCKS</span>`;
+                    winLbList.appendChild(row);
+                });
+
+                document.getElementById('win-overlay').style.display = 'flex';
+
+                setTimeout(() => {
+                    document.getElementById('win-overlay').style.display = 'none';
+                    currentBlocks = 0;
+                    tower = [];
+                    contributors = {};
+                    smokeParticles = [];
+                    isGameFinished = false;
+                    renderLeaderboard();
+                    updateUI();
+                    recalculateCamera();
+                }, 10000);
+
+            }, 10000);
+        }
+
+        function recalculateCamera() {
+            if (tower.length > 2) {
+                targetCameraY = (tower.length - 2) * (BLOCK_SIZE + 12);
+            } else {
+                targetCameraY = 0;
+            }
+        }
+
+        function updateUI() {
+            let percent = Math.round((currentBlocks / maxBlocks) * 100);
+            document.getElementById('progress-bar').style.width = percent + '%';
+
+            let nextMilestone = [40, 80, 120, 160, 200].find(m => m > currentBlocks) || 200;
+            let blocksLeft = nextMilestone - currentBlocks;
+
+            document.getElementById('progress-text').innerText = `${percent}% | ${blocksLeft} BLOCKS UNTIL EVENT`;
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // --- 1. FUNDAL GALAXY ---
+            let bgGradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 30, canvas.width / 2, canvas.height / 2, 450);
+            bgGradient.addColorStop(0, '#120b33');
+            bgGradient.addColorStop(0.6, '#060414');
+            bgGradient.addColorStop(1, '#010105');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            dustParticles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                let grad = ctx.createRadialGradient(p.x, p.y, 1, p.x, p.y, p.radius);
+                grad.addColorStop(0, p.color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            stars.forEach(star => {
+                star.alpha += star.speedAlpha;
+                if (star.alpha > 1 || star.alpha < 0.2) star.speedAlpha *= -1;
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            for (let i = meteors.length - 1; i >= 0; i--) {
+                let m = meteors[i];
+                m.x += m.speed * 0.7; m.y += m.speed;
+                if (m.y > canvas.height + 100) { meteors.splice(i, 1); continue; }
+
+                ctx.save();
+                let mGrad = ctx.createLinearGradient(m.x, m.y, m.x - m.length * 0.7, m.y - m.length);
+                mGrad.addColorStop(0, m.color);
+                mGrad.addColorStop(0.3, 'rgba(255, 100, 0, 0.6)');
+                mGrad.addColorStop(1, 'transparent');
+                ctx.strokeStyle = mGrad;
+                ctx.lineWidth = m.size;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = m.color;
+                ctx.beginPath();
+                ctx.moveTo(m.x, m.y);
+                ctx.lineTo(m.x - m.length * 0.7, m.y - m.length);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            for (let i = rockets.length - 1; i >= 0; i--) {
+                let r = rockets[i];
+                r.x += r.vx; r.y += r.vy; r.flamePulse += 0.3;
+                if (r.x > canvas.width + 100) { rockets.splice(i, 1); continue; }
+
+                ctx.save();
+                ctx.translate(r.x, r.y);
+                ctx.rotate(Math.atan2(r.vy, r.vx));
+
+                let flameLen = 15 + Math.sin(r.flamePulse) * 5;
+                let fGrad = ctx.createLinearGradient(-flameLen, 0, 0, 0);
+                fGrad.addColorStop(0, 'transparent'); fGrad.addColorStop(1, '#ffea00');
+                ctx.fillStyle = fGrad;
+                ctx.fillRect(-flameLen, -3, flameLen, 6);
+
+                ctx.fillStyle = "#00f0ff";
+                ctx.shadowBlur = 8; ctx.shadowColor = "#00f0ff";
+                ctx.beginPath();
+                ctx.moveTo(r.size, 0); ctx.lineTo(-r.size / 2, -r.size / 2);
+                ctx.lineTo(-r.size / 4, 0); ctx.lineTo(-r.size / 2, r.size / 2);
+                ctx.closePath(); ctx.fill();
+                ctx.restore();
+            }
+
+            // --- 2. JOCUL ȘI CAMERA ---
+            cameraY += (targetCameraY - cameraY) * 0.1;
+
+            ctx.save();
+            ctx.translate(0, cameraY);
+
+            if (!isGameFinished) {
+                pendulum.angle += pendulum.speed;
+                let anchorX = canvas.width / 2;
+                let anchorY = 70 - cameraY;
+                pendulum.x = anchorX + Math.sin(pendulum.angle) * 110;
+                pendulum.y = anchorY + pendulum.length;
+
+                ctx.strokeStyle = currentNextColor;
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = currentNextColor;
+                ctx.beginPath();
+                ctx.moveTo(anchorX, anchorY);
+                ctx.lineTo(pendulum.x, pendulum.y);
+                ctx.stroke();
+
+                let isNextRoof = (currentBlocks === maxBlocks - 1);
+                drawNeonBlock(pendulum.x - BLOCK_SIZE / 2, pendulum.y, "Your Name", null, currentNextColor, true, isNextRoof);
+            }
+
+            for (let i = fallingBlocks.length - 1; i >= 0; i--) {
+                let fb = fallingBlocks[i];
+                fb.vy += fb.gravity;
+                fb.y += fb.vy;
+                fb.x += fb.vx;
+
+                let blockTargetY = canvas.height - 120 - ((tower.length) * (BLOCK_SIZE + 12));
+
+                if (fb.willMiss) {
+                    if (fb.y > canvas.height + 250) {
+                        fallingBlocks.splice(i, 1);
+                    } else {
+                        drawNeonBlock(fb.x, fb.y, fb.user, fb.avatarImg, fb.color, false, fb.isRoof);
+                    }
+                } else {
+                    if (fb.y >= blockTargetY) {
+                        tower.push({
+                            x: Math.max(25, Math.min(canvas.width - BLOCK_SIZE - 25, fb.x)),
+                            y: blockTargetY,
+                            user: fb.user,
+                            avatarImg: fb.avatarImg,
+                            color: fb.color,
+                            isRoof: fb.isRoof
+                        });
+
+                        fallingBlocks.splice(i, 1);
+                        recalculateCamera();
+
+                        if (fb.isRoof) {
+                            triggerVictorySequence();
+                        }
+                    } else {
+                        drawNeonBlock(fb.x, fb.y, fb.user, fb.avatarImg, fb.color, false, fb.isRoof);
+                    }
+                }
+            }
+
+            tower.forEach((b) => {
+                drawNeonBlock(b.x, b.y, b.user, b.avatarImg, b.color, false, b.isRoof);
+
+                if (b.isRoof) {
+                    let chimneyX = b.x + BLOCK_SIZE - 25;
+                    let chimneyY = b.y - 15;
+
+                    if (Math.random() > 0.4) {
+                        smokeParticles.push({
+                            x: chimneyX + (Math.random() * 6 - 3),
+                            y: chimneyY,
+                            vx: (Math.random() - 0.5) * 0.5,
+                            vy: -Math.random() * 1.5 - 1,
+                            radius: Math.random() * 4 + 3,
+                            alpha: 0.7
+                        });
+                    }
+                }
+            });
+
+            for (let i = smokeParticles.length - 1; i >= 0; i--) {
+                let sp = smokeParticles[i];
+                sp.x += sp.vx;
+                sp.y += sp.vy;
+                sp.radius += 0.15;
+                sp.alpha -= 0.012;
+
+                if (sp.alpha <= 0) {
+                    smokeParticles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = `rgba(200, 200, 220, ${sp.alpha})`;
+                ctx.beginPath();
+                ctx.arc(sp.x, sp.y, sp.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function drawNeonBlock(x, y, user, avatarImg, color, isPlaceholder = false, isRoof = false) {
+            ctx.save();
+            
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = color;
+            ctx.fillStyle = "rgba(12, 14, 28, 0.9)";
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+
+            if (isRoof) {
+                ctx.fillStyle = "rgba(25, 20, 35, 0.95)";
+                ctx.fillRect(x + BLOCK_SIZE - 30, y - 15, 14, 25);
+                ctx.strokeRect(x + BLOCK_SIZE - 30, y - 15, 14, 25);
+
+                ctx.beginPath();
+                ctx.moveTo(x + BLOCK_SIZE / 2, y - 30);
+                ctx.lineTo(x + BLOCK_SIZE + 10, y + BLOCK_SIZE);
+                ctx.lineTo(x - 10, y + BLOCK_SIZE);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else {
+                let radius = 12;
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + BLOCK_SIZE - radius, y);
+                ctx.quadraticCurveTo(x + BLOCK_SIZE, y, x + BLOCK_SIZE, y + radius);
+                ctx.lineTo(x + BLOCK_SIZE, y + BLOCK_SIZE - radius);
+                ctx.quadraticCurveTo(x + BLOCK_SIZE, y + BLOCK_SIZE, x + BLOCK_SIZE - radius, y + BLOCK_SIZE);
+                ctx.lineTo(x + radius, y + BLOCK_SIZE);
+                ctx.quadraticCurveTo(x, y + BLOCK_SIZE, x, y + BLOCK_SIZE - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.closePath();
+                
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            let avatarYOffset = isRoof ? 10 : -10;
+
+            if (isPlaceholder) {
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.arc(x + BLOCK_SIZE / 2, y + BLOCK_SIZE / 2 + avatarYOffset, 24, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 8px Inter, sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("YOUR PHOTO", x + BLOCK_SIZE / 2, y + BLOCK_SIZE / 2 + avatarYOffset + 3);
+            } else if (avatarImg && avatarImg.complete && avatarImg.naturalWidth !== 0) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(x + BLOCK_SIZE / 2, y + BLOCK_SIZE / 2 + avatarYOffset, 24, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.drawImage(avatarImg, x + BLOCK_SIZE / 2 - 24, y + BLOCK_SIZE / 2 + avatarYOffset - 24, 48, 48);
+                ctx.restore();
+
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x + BLOCK_SIZE / 2, y + BLOCK_SIZE / 2 + avatarYOffset, 24, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 12px Inter, sans-serif";
+            ctx.textAlign = "center";
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = "black";
+            ctx.fillText(user, x + BLOCK_SIZE / 2, y + BLOCK_SIZE - 12);
+
+            ctx.restore();
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "tiktok-tower",
+  "version": "1.0.0",
+  "description": "TikTok Infinite Tower Game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.22.3",
+    "socket.io": "^4.8.4",
+    "tiktok-live-connector": "^2.5.0"
+  }
+}
